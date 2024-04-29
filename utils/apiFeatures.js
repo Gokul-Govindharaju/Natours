@@ -9,7 +9,6 @@ class APIFeatures {
     const excludeFields = ['page', 'sort', 'limit', 'fields'];
 
     excludeFields.forEach((el) => delete queryObj[el]);
-    
 
     // 2)Advance filtering
     let queryStr = JSON.stringify(queryObj);
@@ -23,7 +22,7 @@ class APIFeatures {
   sort() {
     if (this.queryString.sort) {
       const sortBy = this.queryString.sort.split(',').join(' ');
-      console.log(sortBy);
+
       this.query = this.query.sort(sortBy);
     } else {
       this.query = this.query.sort('-createdAt');

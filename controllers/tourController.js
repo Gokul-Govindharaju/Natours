@@ -5,7 +5,7 @@ const Tour = require('./../models/tourModel');
 
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('../utils/appError');
-const factory = require('./handlerFactory')
+const factory = require('./handlerFactory');
 
 const multerStorage = multer.memoryStorage();
 
@@ -19,12 +19,12 @@ const multerFilter = (req, file, cb) => {
 
 const upload = multer({
   storage: multerStorage,
-  fileFilter: multerFilter
+  fileFilter: multerFilter,
 });
 
 exports.uploadTourImages = upload.fields([
   { name: 'imageCover', maxCount: 1 },
-  { name: 'images', maxCount: 3 }
+  { name: 'images', maxCount: 3 },
 ]);
 
 // upload.single('image') req.file
@@ -94,7 +94,7 @@ exports.aliasTopTours = (req, res, next) => {
 };
 
 // exports.getAllTours = catchAsync(async (req, res, next) => {
-  
+
 //   // console.log(req.requestTime);
 //   // Build query
 //   // 1)filtering
@@ -152,7 +152,6 @@ exports.aliasTopTours = (req, res, next) => {
 
 //   // execute query
 
-
 //   const features = new APIFeatures(Tour.find(), req.query)
 //     .filter()
 //     .sort()
@@ -171,8 +170,7 @@ exports.aliasTopTours = (req, res, next) => {
 // });
 
 // exports.getTour = catchAsync(async (req, res, next) => {
-  
- 
+
 //   const tour = await Tour.findById(req.params.id).populate('reviews');
 //   // Tour.findOne({_id: req.params.id})
 //   if (!tour) {
@@ -218,8 +216,8 @@ exports.aliasTopTours = (req, res, next) => {
 //     },
 //   });
 // });
-exports.getAllTours = factory.getAll(Tour)
-exports.getTour = factory.getOne(Tour,{path:'reviews'});
+exports.getAllTours = factory.getAll(Tour);
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 exports.createTour = factory.createOne(Tour);
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
@@ -313,64 +311,69 @@ exports.getMonthlyPlan = catchAsync(async (req, res) => {
   });
 });
 
-exports.getToursWithin = catchAsync( async (req,res,next) =>{
-  const {distance,latlng,unit}  = req.params;
-  const [lat,lng] = latlng.split(',');
-  const radius = unit === 'mi' ? distance/3963.2 : distance / 6378.1;
-  if(!lat || !lng) {
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+  if (!lat || !lng) {
     next(
-      new AppError("Please provide latitude and longitude in the format lat,lng",400)
-    )
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
   }
-  
-const tours = await Tour.find({
-  startLocation:{$geoWithin:{ $centerSphere:[[lng,lat],radius]}}
-})
+
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
   res.status(200).json({
-    status:'success',
-    results:tours.length,
-    data:{
-      data:tours
-    }
-  })
- });
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
 
+exports.getDistance = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
 
- exports.getDistance = catchAsync(async(req,res,next) =>{
-  const {latlng,unit}  = req.params;
-  const [lat,lng] = latlng.split(',');
-  console.log(unit)
-  const multiplier = unit === 'mi' ? 0.000621371: 0.001;
-console.log(multiplier)
-  if(!lat || !lng) {
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
     next(
-      new AppError("Please provide latitude and longitude in the format lat,lng",400)
-    )
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
   }
-  
+
   const distances = await Tour.aggregate([
     {
-      $geoNear:{
-        near:{
-          type:'Point',
-          coordinates:[lng * 1 , lat * 1]
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
         },
-        distanceField:'distance',
-        distanceMultiplier:multiplier
-      }
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
     },
     {
-      $project:{
-        distance:1,
-        name:1
-      }
-    }
-  ])
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
 
   res.status(200).json({
-    status:'success',
-    data:{
-      data:distances
-    }
-  })
- })
+    status: 'success',
+    data: {
+      data: distances,
+    },
+  });
+});

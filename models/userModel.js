@@ -14,9 +14,9 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'please provide a valid email'],
   },
-  photo:{
-    type:String,
-    default:'default.jpg'
+  photo: {
+    type: String,
+    default: 'default.jpg',
   },
   role: {
     type: String,
@@ -42,11 +42,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
-  active:{
-    type:Boolean,
-    default:true,
-    select:false
-  }
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 userSchema.pre('save', async function (next) {
@@ -60,18 +60,18 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.pre('save', function(next){
-  if(!this.isModified('password') || this.isNew) return next();
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
   next();
-})
+});
 
-userSchema.pre(/^find/,function(next) {
+userSchema.pre(/^find/, function (next) {
   // this points to the  current query
-  this.find({active:{$ne:false}});
-  next()
-})
+  this.find({ active: { $ne: false } });
+  next();
+});
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
@@ -85,7 +85,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
       this.passwordChangedAt.getTime() / 1000,
       10
     );
-    console.log(JWTTimestamp, changedTimestamp);
+
     return JWTTimestamp < changedTimestamp;
   }
 
@@ -99,7 +99,6 @@ userSchema.methods.createPasswordResetToken = function () {
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
-  console.log({ resetToken }, this.passwordResetToken);
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;

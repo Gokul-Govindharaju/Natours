@@ -17,8 +17,6 @@ const factory = require('./handlerFactory');
 //   });
 // });
 
-
-
 // exports.createReview = catchAsync(async(req,res,next) =>{
 
 //     const newReview = await Review.create(req.body);
@@ -30,11 +28,11 @@ const factory = require('./handlerFactory');
 //         }    })
 // });
 exports.setTourUserIds = (req, res, next) => {
-    // allow nested routers
-    if (!req.body.tour) req.body.tour = req.params.tourId;
-    req.body.user = req.user.id;
-    next();
-  };
+  // allow nested routers
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  req.body.user = req.user.id;
+  next();
+};
 exports.getAllReviews = factory.getAll(Review);
 exports.getReview = factory.getOne(Review);
 exports.createReview = factory.createOne(Review);
